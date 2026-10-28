@@ -17,10 +17,8 @@ class CoinDash extends Phaser.Scene {
     this.player = this.add.rectangle(c.width / 2, c.height / 2, 24, 24, c.colors.player);
     this.physics.add.existing(this.player);
     this.player.body.setCollideWorldBounds(true);
-    this.coin = this.add.circle(100, 100, 9, c.colors.coin);
-    this.physics.add.existing(this.coin);
-    this.coin.body.setCircle(9);
-    this.placeCoin();
+    this.coins = this.physics.add.group();
+    this.addCoin();
     this.drones = this.physics.add.group();
     for (let i = 0; i < c.droneCount; i++) {
       const drone = this.add.rectangle(90 + i * 270, 100, c.droneSize, c.droneSize, c.colors.drone);
@@ -29,10 +27,10 @@ class CoinDash extends Phaser.Scene {
       const angle = (35 + i * 105) * Math.PI / 180;
       drone.body.setVelocity(Math.cos(angle) * c.droneSpeed, Math.sin(angle) * c.droneSpeed);
     }
-    this.physics.add.overlap(this.player, this.coin, () => {
+    this.physics.add.overlap(this.player, this.coins, (_player, coin) => {
       if (this.finished) return;
       this.score++;
-      this.placeCoin();
+      this.placeCoin(coin);
     });
     this.physics.add.overlap(this.player, this.drones, () => this.finish('A drone caught you!'));
     this.cursors = this.input.keyboard.createCursorKeys();
@@ -44,16 +42,25 @@ class CoinDash extends Phaser.Scene {
     });
   }
 
-  placeCoin() {
+  addCoin() {
+    const coin = this.add.circle(0, 0, 9, COIN_DASH.colors.coin);
+    this.coins.add(coin);
+    coin.body.setCircle(9);
+    this.placeCoin(coin);
+  }
+
+  placeCoin(coin) {
     const c = COIN_DASH;
-    // Avoid spawning the next coin directly underneath the player.
+    // Keep coins away from the player and each other when they spawn.
     let x, y;
     do {
       x = Phaser.Math.Between(25, c.width - 25);
       y = Phaser.Math.Between(70, c.height - 25);
-    } while (Phaser.Math.Distance.Between(x, y, this.player.x, this.player.y) < 60);
-    this.coin.setPosition(x, y);
-    this.coin.body.reset(x, y);
+    } while (Phaser.Math.Distance.Between(x, y, this.player.x, this.player.y) < 60 ||
+      this.coins.getChildren().some((other) => other !== coin &&
+        Phaser.Math.Distance.Between(x, y, other.x, other.y) < 36));
+    coin.setPosition(x, y);
+    coin.body.reset(x, y);
   }
 
   update() {
