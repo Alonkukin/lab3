@@ -1,4 +1,58 @@
 /* global Phaser, COIN_DASH */
+// Shown before every round so the player can pick how many drones to face.
+class Menu extends Phaser.Scene {
+  constructor() { super('Menu'); }
+
+  create() {
+    const c = COIN_DASH;
+    this.choice = this.registry.get('droneCount') ?? c.droneCount;
+    this.add.grid(c.width / 2, c.height / 2, c.width, c.height, 40, 40,
+      c.colors.background, 1, 0x24334b, 0.45);
+    this.add.text(c.width / 2, 110, 'COIN DASH', { font: 'bold 44px monospace', color: '#ffffff' })
+      .setOrigin(0.5);
+    this.add.text(c.width / 2, 180, 'How many drones?', { font: '24px monospace', color: '#ffffff' })
+      .setOrigin(0.5);
+    const size = 56, gap = 12, total = c.maxDrones - c.minDrones + 1;
+    const left = c.width / 2 - (total * size + (total - 1) * gap) / 2 + size / 2;
+    this.options = [];
+    for (let n = c.minDrones; n <= c.maxDrones; n++) {
+      const x = left + (n - c.minDrones) * (size + gap);
+      const box = this.add.rectangle(x, 260, size, size, 0x0a1120).setInteractive({ useHandCursor: true });
+      const label = this.add.text(x, 260, String(n), { font: 'bold 26px monospace' }).setOrigin(0.5);
+      box.on('pointerdown', () => { this.select(n); this.startRound(); });
+      box.on('pointerover', () => this.select(n));
+      this.options.push({ n, box, label });
+    }
+    this.add.text(c.width / 2, 360,
+      '← / → to choose · Enter or Space to start\nor click a number',
+      { font: '18px monospace', color: '#9fb0c8', align: 'center', lineSpacing: 8 }).setOrigin(0.5);
+    const keys = this.input.keyboard;
+    keys.on('keydown-LEFT', () => this.select(this.choice - 1));
+    keys.on('keydown-A', () => this.select(this.choice - 1));
+    keys.on('keydown-RIGHT', () => this.select(this.choice + 1));
+    keys.on('keydown-D', () => this.select(this.choice + 1));
+    keys.on('keydown-ENTER', () => this.startRound());
+    keys.on('keydown-SPACE', () => this.startRound());
+    this.select(this.choice);
+  }
+
+  select(n) {
+    const c = COIN_DASH;
+    this.choice = Phaser.Math.Clamp(n, c.minDrones, c.maxDrones);
+    for (const { n: value, box, label } of this.options) {
+      const active = value === this.choice;
+      box.setStrokeStyle(3, active ? c.colors.drone : 0x34445e);
+      box.setFillStyle(active ? 0x2a1724 : 0x0a1120);
+      label.setColor(active ? '#ff657a' : '#e5edf7');
+    }
+  }
+
+  startRound() {
+    this.registry.set('droneCount', this.choice);
+    this.scene.start('CoinDash');
+  }
+}
+
 class CoinDash extends Phaser.Scene {
   constructor() { super('CoinDash'); }
 
@@ -6,7 +60,7 @@ class CoinDash extends Phaser.Scene {
     const c = COIN_DASH;
     this.score = 0;
     this.finished = false;
-    // The player's choice lives in the registry so it survives restarts.
+    // Chosen in the menu; the registry keeps it between rounds.
     this.droneCount = this.registry.get('droneCount') ?? c.droneCount;
     this.deadline = this.time.now + c.roundSeconds * 1000;
     this.physics.world.setBounds(0, 44, c.width, c.height - 44);
@@ -39,20 +93,7 @@ class CoinDash extends Phaser.Scene {
     this.physics.add.overlap(this.player, this.drones, () => this.finish('A drone caught you!'));
     this.cursors = this.input.keyboard.createCursorKeys();
     this.keys = this.input.keyboard.addKeys('W,A,S,D,R');
-    this.input.keyboard.on('keydown-R', () => this.scene.restart());
-    this.input.keyboard.on('keydown', (event) => {
-      if (event.key === '+' || event.key === '=') this.changeDrones(1);
-      if (event.key === '-' || event.key === '_') this.changeDrones(-1);
-    });
-  }
-
-  changeDrones(delta) {
-    const c = COIN_DASH;
-    const count = Phaser.Math.Clamp(this.droneCount + delta, c.minDrones, c.maxDrones);
-    if (count === this.droneCount) return;
-    // Changing the drone count starts a fresh round so it can't be used mid-round to escape.
-    this.registry.set('droneCount', count);
-    this.scene.restart();
+    this.input.keyboard.on('keydown-R', () => this.scene.start('Menu'));
   }
 
   placeCoin() {
@@ -76,7 +117,7 @@ class CoinDash extends Phaser.Scene {
     const direction = new Phaser.Math.Vector2(dx, dy).normalize().scale(COIN_DASH.playerSpeed);
     this.player.body.setVelocity(direction.x, direction.y);
     const seconds = Math.max(0, Math.ceil((this.deadline - this.time.now) / 1000));
-    this.hud.setText(`Coins: ${this.score}          Drones: ${this.droneCount} (+/-)          Time: ${seconds}s`);
+    this.hud.setText(`Coins: ${this.score}          Drones: ${this.droneCount}          Time: ${seconds}s`);
     if (seconds === 0) this.finish('Time is up!');
   }
 
@@ -87,7 +128,7 @@ class CoinDash extends Phaser.Scene {
     const c = COIN_DASH;
     this.add.rectangle(c.width / 2, c.height / 2, 460, 150, 0x0a1120, 0.95);
     this.add.text(c.width / 2, c.height / 2,
-      `${reason}\n${this.score} coins collected\nPress R to try again`,
+      `${reason}\n${this.score} coins collected\nPress R for the menu`,
       { font: '24px monospace', color: '#ffffff', align: 'center', lineSpacing: 12 }
     ).setOrigin(0.5);
   }
@@ -100,5 +141,5 @@ window.coinDashGame = new Phaser.Game({
   backgroundColor: COIN_DASH.colors.background,
   physics: { default: 'arcade', arcade: { debug: false } },
   scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_HORIZONTALLY },
-  scene: CoinDash
+  scene: [Menu, CoinDash]
 });
