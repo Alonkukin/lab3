@@ -13,6 +13,14 @@ Press P or Esc to pause or resume the round.
 With the default count, one of the three drones is smaller, purple, and faster. Selected drone speed
 or size modifiers preserve each drone's starting speed and size difference.
 
+Every five coins, the round pauses and offers two random abilities. Press 1 or 2, or click an offer:
+
+- **Extra life:** adds one life. The game continues after a drone hit until all lives are lost.
+- **Phase:** pass through drones for 10 seconds. The HUD shows the remaining time.
+- **Coin teleport:** jump to the nearest coin every five seconds for the rest of the round. Each jump grants one second of drone immunity. Once chosen, this ability is removed from later offers.
+
+The HUD shows lives, phase time, and the next teleport. After a nonfatal drone hit, the player also gets one second of immunity to avoid losing several lives in a single collision.
+
 **Play it here:** https://www.avivz.net/coin-dash/
 
 ## Run it locally
