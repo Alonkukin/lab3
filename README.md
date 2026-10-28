@@ -4,6 +4,8 @@ Collect coins, avoid drones, and survive a 45-second round. Move with arrow keys
 press R to restart. This is deliberately small so you can add features during the lab.
 Before each game, select any combination of features and press Start game. Leave every option
 unchecked to play the original game. Use Change features to return to the menu.
+On this branch, one of the three drones is smaller, purple, and faster. Selected drone speed
+or size modifiers preserve each drone's starting speed and size difference.
 
 **Play it here:** https://www.avivz.net/coin-dash/
 

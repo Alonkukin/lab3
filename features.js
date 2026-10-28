@@ -6,9 +6,8 @@ window.COIN_DASH_FEATURES = [
     label: 'Drones get faster',
     description: 'Drone speed doubles gradually over the round.',
     update(scene, progress) {
-      const speed = COIN_DASH.droneSpeed * (1 + progress);
       scene.drones.getChildren().forEach((drone) => {
-        drone.body.velocity.setLength(speed);
+        drone.body.velocity.setLength(drone.baseSpeed * (1 + progress));
       });
     }
   },
@@ -17,8 +16,8 @@ window.COIN_DASH_FEATURES = [
     label: 'Drones get bigger',
     description: 'Drone size doubles gradually over the round.',
     update(scene, progress) {
-      const size = COIN_DASH.droneSize * (1 + progress);
       scene.drones.getChildren().forEach((drone) => {
+        const size = drone.baseSize * (1 + progress);
         drone.setDisplaySize(size, size);
         drone.body.setSize(size, size, true);
       });

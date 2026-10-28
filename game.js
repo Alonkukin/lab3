@@ -23,11 +23,17 @@ class CoinDash extends Phaser.Scene {
     this.placeCoin();
     this.drones = this.physics.add.group();
     for (let i = 0; i < c.droneCount; i++) {
-      const drone = this.add.rectangle(90 + i * 270, 100, c.droneSize, c.droneSize, c.colors.drone);
+      const fast = i % c.fastDroneEvery === 1;
+      const size = fast ? 18 : c.droneSize;
+      const speed = fast ? c.fastDroneSpeed : c.droneSpeed;
+      const color = fast ? c.colors.fastDrone : c.colors.drone;
+      const drone = this.add.rectangle(90 + i * 270, 100, size, size, color);
+      drone.baseSize = size;
+      drone.baseSpeed = speed;
       this.drones.add(drone);
       drone.body.setCollideWorldBounds(true).setBounce(1, 1);
       const angle = (35 + i * 105) * Math.PI / 180;
-      drone.body.setVelocity(Math.cos(angle) * c.droneSpeed, Math.sin(angle) * c.droneSpeed);
+      drone.body.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
     }
     this.physics.add.overlap(this.player, this.coin, () => {
       if (this.finished) return;
