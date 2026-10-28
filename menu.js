@@ -1,10 +1,56 @@
-/* global COIN_DASH_FEATURES, createCoinDashGame */
+/* global COIN_DASH_FEATURES, COIN_DASH_SETTINGS, createCoinDashGame */
 const menu = document.getElementById('menu');
 const form = document.getElementById('feature-form');
 const options = document.getElementById('feature-options');
 const gameContainer = document.getElementById('game');
 const gameControls = document.getElementById('game-controls');
 let game = null;
+const settingsToggle = document.getElementById('settings-toggle');
+const settingsPanel = document.getElementById('settings-panel');
+const playerSpeed = document.getElementById('player-speed');
+const droneGrowthRate = document.getElementById('drone-growth-rate');
+
+function closeSettings() {
+  if (settingsPanel.hidden) return;
+  settingsPanel.hidden = true;
+  settingsToggle.setAttribute('aria-expanded', 'false');
+  settingsToggle.textContent = 'Settings';
+  if (game) {
+    game.input.keyboard.enabled = true;
+    game.input.keyboard.resetKeys();
+    if (game.scene.isPaused('CoinDash')) game.scene.resume('CoinDash');
+  }
+}
+
+settingsToggle.addEventListener('click', () => {
+  if (!settingsPanel.hidden) {
+    closeSettings();
+    return;
+  }
+  settingsPanel.hidden = false;
+  settingsToggle.setAttribute('aria-expanded', 'true');
+  settingsToggle.textContent = 'Close settings';
+  if (game) {
+    game.input.keyboard.resetKeys();
+    game.input.keyboard.enabled = false;
+    if (game.scene.isActive('CoinDash')) game.scene.pause('CoinDash');
+  }
+});
+
+playerSpeed.addEventListener('input', () => {
+  COIN_DASH_SETTINGS.playerSpeed = Number(playerSpeed.value);
+  document.getElementById('player-speed-value').textContent = `${playerSpeed.value} px/s`;
+});
+
+droneGrowthRate.addEventListener('input', () => {
+  COIN_DASH_SETTINGS.droneGrowthRate = Number(droneGrowthRate.value);
+  document.getElementById('drone-growth-rate-value').textContent = `${Number(droneGrowthRate.value)}×`;
+});
+
+playerSpeed.value = COIN_DASH_SETTINGS.playerSpeed;
+droneGrowthRate.value = COIN_DASH_SETTINGS.droneGrowthRate;
+playerSpeed.dispatchEvent(new Event('input'));
+droneGrowthRate.dispatchEvent(new Event('input'));
 
 COIN_DASH_FEATURES.forEach((feature) => {
   const label = document.createElement('label');
@@ -25,6 +71,7 @@ COIN_DASH_FEATURES.forEach((feature) => {
 
 form.addEventListener('submit', (event) => {
   event.preventDefault();
+  closeSettings();
   const selected = new Set(new FormData(form).getAll('feature'));
   const activeFeatures = COIN_DASH_FEATURES.filter((feature) => selected.has(feature.id));
   menu.hidden = true;
@@ -34,6 +81,7 @@ form.addEventListener('submit', (event) => {
 });
 
 document.getElementById('change-features').addEventListener('click', () => {
+  closeSettings();
   game.destroy(true);
   game = null;
   gameContainer.hidden = true;
