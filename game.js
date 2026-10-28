@@ -65,6 +65,7 @@ class CoinDash extends Phaser.Scene {
     const c = COIN_DASH;
     this.score = 0;
     this.finished = false;
+    this.paused = false;
     // Chosen in the menu; the registry keeps it between rounds.
     this.droneCount = this.registry.get('droneCount') ?? c.droneCount;
     this.deadline = this.time.now + c.roundSeconds * 1000;
@@ -102,6 +103,28 @@ class CoinDash extends Phaser.Scene {
     this.cursors = this.input.keyboard.createCursorKeys();
     this.keys = this.input.keyboard.addKeys('W,A,S,D,R');
     this.input.keyboard.on('keydown-R', () => this.scene.start('Menu'));
+    this.input.keyboard.on('keydown-P', () => this.togglePause());
+    this.input.keyboard.on('keydown-ESC', () => this.togglePause());
+  }
+
+  togglePause() {
+    if (this.finished) return;
+    const c = COIN_DASH;
+    this.paused = !this.paused;
+    if (this.paused) {
+      this.pausedAt = this.time.now;
+      this.physics.pause();
+      this.pauseOverlay = this.add.container(c.width / 2, c.height / 2, [
+        this.add.rectangle(0, 0, 460, 130, 0x0a1120, 0.95),
+        this.add.text(0, 0, 'Paused\nPress P or Esc to continue',
+          { font: '24px monospace', color: '#ffffff', align: 'center', lineSpacing: 12 }).setOrigin(0.5)
+      ]);
+    } else {
+      // Push the deadline back so time spent paused doesn't count against the round.
+      this.deadline += this.time.now - this.pausedAt;
+      this.physics.resume();
+      this.pauseOverlay.destroy();
+    }
   }
 
   placeCoin() {
@@ -117,7 +140,7 @@ class CoinDash extends Phaser.Scene {
   }
 
   update() {
-    if (this.finished) return;
+    if (this.finished || this.paused) return;
     const dx = Number(this.cursors.right.isDown || this.keys.D.isDown)
       - Number(this.cursors.left.isDown || this.keys.A.isDown);
     const dy = Number(this.cursors.down.isDown || this.keys.S.isDown)
