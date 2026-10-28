@@ -12,6 +12,7 @@ class CoinDash extends Phaser.Scene {
     this.score = 0;
     this.playerSpeedBonus = 0;
     this.finished = false;
+    this.paused = false;
     this.elapsedMs = 0;
     this.physics.world.setBounds(0, 44, c.width, c.height - 44);
     this.add.grid(c.width / 2, c.height / 2, c.width, c.height, 40, 40,
@@ -48,16 +49,39 @@ class CoinDash extends Phaser.Scene {
     this.cursors = this.input.keyboard.createCursorKeys();
     this.keys = this.input.keyboard.addKeys('W,A,S,D,R');
     const restart = () => this.scene.restart();
+    const togglePause = () => this.togglePause();
     const adjustDrones = (event) => {
+      if (this.paused) return;
       if (event.key === '+' || event.key === '=') this.changeDrones(1);
       if (event.key === '-' || event.key === '_') this.changeDrones(-1);
     };
     this.input.keyboard.on('keydown-R', restart);
+    this.input.keyboard.on('keydown-P', togglePause);
+    this.input.keyboard.on('keydown-ESC', togglePause);
     this.input.keyboard.on('keydown', adjustDrones);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.input.keyboard.off('keydown-R', restart);
+      this.input.keyboard.off('keydown-P', togglePause);
+      this.input.keyboard.off('keydown-ESC', togglePause);
       this.input.keyboard.off('keydown', adjustDrones);
     });
+  }
+
+  togglePause() {
+    if (this.finished) return;
+    const c = COIN_DASH;
+    this.paused = !this.paused;
+    if (this.paused) {
+      this.physics.pause();
+      this.pauseOverlay = this.add.container(c.width / 2, c.height / 2, [
+        this.add.rectangle(0, 0, 460, 130, 0x0a1120, 0.95),
+        this.add.text(0, 0, 'Paused\nPress P or Esc to continue',
+          { font: '24px monospace', color: '#ffffff', align: 'center', lineSpacing: 12 }).setOrigin(0.5)
+      ]);
+    } else {
+      this.physics.resume();
+      this.pauseOverlay.destroy();
+    }
   }
 
   addCoin() {
@@ -90,7 +114,7 @@ class CoinDash extends Phaser.Scene {
   }
 
   update(_time, delta) {
-    if (this.finished) return;
+    if (this.finished || this.paused) return;
     this.elapsedMs += delta;
     const dx = Number(this.cursors.right.isDown || this.keys.D.isDown)
       - Number(this.cursors.left.isDown || this.keys.A.isDown);
