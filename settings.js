@@ -5,8 +5,10 @@ window.COIN_DASH = {
   roundSeconds: 45,
   playerSpeed: 240,
   droneSpeed: 105,
+  droneSize: 26,
   // Every third drone (the 2nd, 5th, 8th) is a smaller, faster one.
   fastDroneSpeed: 190,
+  fastDroneSize: 18,
   fastDroneEvery: 3,
   droneCount: 3,
   minDrones: 1,

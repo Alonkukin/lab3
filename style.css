@@ -5,3 +5,26 @@ header > p:first-child { color: #71e8ce; font-size: 12px; letter-spacing: .15em;
 h1 { margin: 0; font-size: 40px; }
 #game { border: 1px solid #34445e; border-radius: 12px; overflow: hidden; }
 canvas { display: block; }
+[hidden] { display: none !important; }
+.menu { margin-top: 20px; padding: 24px; border: 1px solid #34445e; border-radius: 12px; background: #14223a; }
+.menu h2 { margin: 0 0 4px; }
+.menu p { margin: 0 0 18px; color: #b9c8da; }
+.feature-options { display: grid; gap: 12px; margin-bottom: 20px; }
+.feature-option { display: flex; align-items: flex-start; gap: 12px; padding: 14px; border: 1px solid #34445e; border-radius: 8px; cursor: pointer; }
+.feature-option:has(input:checked) { border-color: #71e8ce; background: #1b3547; }
+.feature-option input { margin-top: 5px; accent-color: #71e8ce; }
+.feature-option strong, .feature-option small { display: block; }
+.feature-option small { margin-top: 2px; color: #b9c8da; font-size: 14px; }
+fieldset.drone-count { margin: 0 0 20px; padding: 14px; border: 1px solid #34445e; border-radius: 8px; }
+.drone-count legend { padding: 0 6px; font-weight: 700; }
+.drone-count-options { display: flex; flex-wrap: wrap; gap: 10px; }
+.drone-count-options label { position: relative; cursor: pointer; }
+.drone-count-options input { position: absolute; opacity: 0; }
+.drone-count-options span { display: grid; place-items: center; width: 48px; height: 48px; border: 2px solid #34445e; border-radius: 8px; font: 700 22px monospace; }
+.drone-count-options input:checked + span { border-color: #ff657a; background: #2a1724; color: #ff657a; }
+.drone-count-options input:focus-visible + span { outline: 2px solid #fff; outline-offset: 3px; }
+.menu p.fast-drone-note { margin: 10px 0 0; color: #c77dff; font-size: 15px; }
+button { padding: 10px 18px; border: 0; border-radius: 8px; background: #71e8ce; color: #0a1120; font: inherit; font-weight: 700; cursor: pointer; }
+button:hover { background: #a0f3df; }
+button:focus-visible, .feature-option:focus-within { outline: 2px solid #fff; outline-offset: 3px; }
+#game-controls { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
