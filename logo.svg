@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 590 140" role="img" aria-labelledby="title desc">
+  <title id="title">Coin Dash</title>
+  <desc id="desc">A glowing coin races past a red drone beside the Coin Dash wordmark.</desc>
+  <defs>
+    <linearGradient id="coin" x2="1" y2="1">
+      <stop stop-color="#fff0a3"/>
+      <stop offset=".55" stop-color="#ffd166"/>
+      <stop offset="1" stop-color="#ff9d42"/>
+    </linearGradient>
+    <linearGradient id="dash" x2="1" y2="1">
+      <stop stop-color="#a8ffe6"/>
+      <stop offset="1" stop-color="#55cfc9"/>
+    </linearGradient>
+  </defs>
+  <path d="M9 74h42M17 88h30M25 101h25" stroke="#71e8ce" stroke-width="6" stroke-linecap="round" opacity=".7"/>
+  <circle cx="91" cy="69" r="43" fill="#ffd166" opacity=".12"/>
+  <circle cx="91" cy="69" r="34" fill="url(#coin)" stroke="#fff1b3" stroke-width="3"/>
+  <circle cx="91" cy="69" r="24" fill="none" stroke="#c57831" stroke-width="3" opacity=".65"/>
+  <path d="M84 55h12a7 7 0 0 1 0 14H86a7 7 0 0 0 0 14h13M92 49v40" fill="none" stroke="#9a561f" stroke-width="4" stroke-linecap="round"/>
+  <path d="M121 27l10-10m-1 31 14-4m-16 37 15 8" stroke="#ffd166" stroke-width="4" stroke-linecap="round"/>
+  <g transform="translate(143 70) rotate(15)">
+    <rect x="-8" y="-8" width="16" height="16" rx="3" fill="#ff657a"/>
+    <circle r="2.5" fill="#fff0f3"/>
+  </g>
+  <text x="170" y="91" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="64" font-weight="900" letter-spacing="-4">COIN</text>
+  <text x="341" y="91" fill="url(#dash)" font-family="Arial, Helvetica, sans-serif" font-size="64" font-weight="900" font-style="italic" letter-spacing="-4">DASH</text>
+  <path d="M173 108h366" stroke="#71e8ce" stroke-width="5" stroke-linecap="round" opacity=".45"/>
+</svg>

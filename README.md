@@ -4,6 +4,9 @@ Collect coins, avoid drones, and survive a 45-second round. Move with arrow keys
 press R to restart. This is deliberately small so you can add features during the lab.
 Before each game, select any combination of features and press Start game. Leave every option
 unchecked to play the original game. Use Change features to return to the menu.
+Choose one of three arena backgrounds on the start menu: Midnight Grid, Neon Circuit, or
+Sunset Run. The chosen background stays in place when you restart a round; returning to the
+menu lets you choose another. The Coin Dash logo is stored in `logo.svg`.
 Open Settings before or during a game to adjust player speed and drone growth rate. The round
 pauses while Settings is open, and changes take effect when you resume. Drone growth rate only
 affects rounds with the “Drones get bigger” feature selected.
@@ -54,6 +57,7 @@ laptops' JSON files together and save the combined HTML. Use the same time windo
 - `.gitignore`: keeps generated reports out of Git.
 - `index.html`: page and script loading.
 - `style.css`: page appearance.
+- `logo.svg`: scalable game logo.
 - `settings.js`: round duration, colours, dimensions and live settings values.
 - `features.js`: available menu options and their effects during a round. Add an entry with a
   unique `id`, `label`, `description`, and either `update(scene, progress)` for continuous effects
