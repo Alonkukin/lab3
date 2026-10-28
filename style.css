@@ -12,6 +12,7 @@ canvas { display: block; }
 .feature-options { display: grid; gap: 12px; margin-bottom: 20px; }
 .drone-count-setting { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
 .drone-count-setting input { width: 70px; padding: 8px; border: 1px solid #34445e; border-radius: 6px; background: #0a1120; color: #e5edf7; font: inherit; }
+.drone-count-setting small { color: #c77dff; }
 .feature-option { display: flex; align-items: flex-start; gap: 12px; padding: 14px; border: 1px solid #34445e; border-radius: 8px; cursor: pointer; }
 .feature-option:has(input:checked) { border-color: #71e8ce; background: #1b3547; }
 .feature-option input { margin-top: 5px; accent-color: #71e8ce; }

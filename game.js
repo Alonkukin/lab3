@@ -28,7 +28,7 @@ class CoinDash extends Phaser.Scene {
       const x = this.droneCount === c.droneCount ? 90 + i * 270 : (i + 0.5) * c.width / this.droneCount;
       const y = this.droneCount === c.droneCount ? 100 : (i % 2 ? c.height - 60 : 100);
       const fast = i % c.fastDroneEvery === 1;
-      const size = fast ? 18 : c.droneSize;
+      const size = fast ? c.fastDroneSize : c.droneSize;
       const speed = fast ? c.fastDroneSpeed : c.droneSpeed;
       const color = fast ? c.colors.fastDrone : c.colors.drone;
       const drone = this.add.rectangle(x, y, size, size, color);

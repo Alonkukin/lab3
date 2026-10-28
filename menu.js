@@ -5,6 +5,7 @@ const options = document.getElementById('feature-options');
 const gameContainer = document.getElementById('game');
 const gameControls = document.getElementById('game-controls');
 const droneCountInput = document.getElementById('drone-count');
+const fastDroneNote = document.getElementById('fast-drone-note');
 let game = null;
 const settingsToggle = document.getElementById('settings-toggle');
 const settingsPanel = document.getElementById('settings-panel');
@@ -57,6 +58,15 @@ droneCountInput.min = COIN_DASH.minDrones;
 droneCountInput.max = COIN_DASH.maxDrones;
 droneCountInput.value = COIN_DASH.droneCount;
 
+function updateFastDroneNote() {
+  const count = Math.max(COIN_DASH.minDrones,
+    Math.min(COIN_DASH.maxDrones, Number(droneCountInput.value) || COIN_DASH.droneCount));
+  const fast = Math.floor((count + COIN_DASH.fastDroneEvery - 2) / COIN_DASH.fastDroneEvery);
+  fastDroneNote.textContent = fast ? `${fast} fast purple ${fast === 1 ? 'drone' : 'drones'}` : 'No fast purple drones';
+}
+droneCountInput.addEventListener('input', updateFastDroneNote);
+updateFastDroneNote();
+
 COIN_DASH_FEATURES.forEach((feature) => {
   const label = document.createElement('label');
   label.className = 'feature-option';
@@ -82,10 +92,14 @@ form.addEventListener('submit', (event) => {
   const droneCount = Math.max(COIN_DASH.minDrones,
     Math.min(COIN_DASH.maxDrones, Number(droneCountInput.value) || COIN_DASH.droneCount));
   droneCountInput.value = droneCount;
+  updateFastDroneNote();
   menu.hidden = true;
   gameContainer.hidden = false;
   gameControls.hidden = false;
-  game = createCoinDashGame(activeFeatures, droneCount, (count) => { droneCountInput.value = count; });
+  game = createCoinDashGame(activeFeatures, droneCount, (count) => {
+    droneCountInput.value = count;
+    updateFastDroneNote();
+  });
 });
 
 document.getElementById('change-features').addEventListener('click', () => {
