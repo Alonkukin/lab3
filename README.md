@@ -9,6 +9,8 @@ pauses while Settings is open, and changes take effect when you resume. Drone gr
 affects rounds with the “Drones get bigger” feature selected.
 Choose between 1 and 8 drones in the same menu; the default is 3. Press + or − during a game
 to change the count and start a fresh round.
+With the default count, one of the three drones is smaller, purple, and faster. Selected drone speed
+or size modifiers preserve each drone's starting speed and size difference.
 
 **Play it here:** https://www.avivz.net/coin-dash/
 
