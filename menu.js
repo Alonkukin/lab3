@@ -1,10 +1,15 @@
-/* global COIN_DASH_FEATURES, createCoinDashGame */
+/* global COIN_DASH, COIN_DASH_FEATURES, createCoinDashGame */
 const menu = document.getElementById('menu');
 const form = document.getElementById('feature-form');
 const options = document.getElementById('feature-options');
 const gameContainer = document.getElementById('game');
 const gameControls = document.getElementById('game-controls');
+const droneCountInput = document.getElementById('drone-count');
 let game = null;
+
+droneCountInput.min = COIN_DASH.minDrones;
+droneCountInput.max = COIN_DASH.maxDrones;
+droneCountInput.value = COIN_DASH.droneCount;
 
 COIN_DASH_FEATURES.forEach((feature) => {
   const label = document.createElement('label');
@@ -27,10 +32,13 @@ form.addEventListener('submit', (event) => {
   event.preventDefault();
   const selected = new Set(new FormData(form).getAll('feature'));
   const activeFeatures = COIN_DASH_FEATURES.filter((feature) => selected.has(feature.id));
+  const droneCount = Math.max(COIN_DASH.minDrones,
+    Math.min(COIN_DASH.maxDrones, Number(droneCountInput.value) || COIN_DASH.droneCount));
+  droneCountInput.value = droneCount;
   menu.hidden = true;
   gameContainer.hidden = false;
   gameControls.hidden = false;
-  game = createCoinDashGame(activeFeatures);
+  game = createCoinDashGame(activeFeatures, droneCount, (count) => { droneCountInput.value = count; });
 });
 
 document.getElementById('change-features').addEventListener('click', () => {

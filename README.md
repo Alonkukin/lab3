@@ -4,6 +4,8 @@ Collect coins, avoid drones, and survive a 45-second round. Move with arrow keys
 press R to restart. This is deliberately small so you can add features during the lab.
 Before each game, select any combination of features and press Start game. Leave every option
 unchecked to play the original game. Use Change features to return to the menu.
+Choose between 1 and 8 drones in the same menu; the default is 3. Press + or − during a game
+to change the count and start a fresh round.
 
 **Play it here:** https://www.avivz.net/coin-dash/
 
