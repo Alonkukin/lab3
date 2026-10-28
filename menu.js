@@ -5,6 +5,7 @@ const options = document.getElementById('feature-options');
 const gameContainer = document.getElementById('game');
 const gameControls = document.getElementById('game-controls');
 const droneCountInput = document.getElementById('drone-count');
+const droneCountOptions = document.getElementById('drone-count-options');
 const fastDroneNote = document.getElementById('fast-drone-note');
 let game = null;
 const settingsToggle = document.getElementById('settings-toggle');
@@ -58,13 +59,38 @@ droneCountInput.min = COIN_DASH.minDrones;
 droneCountInput.max = COIN_DASH.maxDrones;
 droneCountInput.value = COIN_DASH.droneCount;
 
+for (let count = COIN_DASH.minDrones; count <= COIN_DASH.maxDrones; count++) {
+  const label = document.createElement('label');
+  const radio = document.createElement('input');
+  radio.type = 'radio';
+  radio.name = 'drone-choice';
+  radio.value = count;
+  radio.checked = count === COIN_DASH.droneCount;
+  const number = document.createElement('span');
+  number.textContent = count;
+  label.append(radio, number);
+  droneCountOptions.append(label);
+}
+
+function syncDroneChoice() {
+  const selected = droneCountOptions.querySelector(`input[value="${droneCountInput.value}"]`);
+  if (selected) selected.checked = true;
+}
+
 function updateFastDroneNote() {
   const count = Math.max(COIN_DASH.minDrones,
     Math.min(COIN_DASH.maxDrones, Number(droneCountInput.value) || COIN_DASH.droneCount));
   const fast = Math.floor((count + COIN_DASH.fastDroneEvery - 2) / COIN_DASH.fastDroneEvery);
   fastDroneNote.textContent = fast ? `${fast} fast purple ${fast === 1 ? 'drone' : 'drones'}` : 'No fast purple drones';
 }
-droneCountInput.addEventListener('input', updateFastDroneNote);
+droneCountInput.addEventListener('input', () => {
+  syncDroneChoice();
+  updateFastDroneNote();
+});
+droneCountOptions.addEventListener('change', (event) => {
+  droneCountInput.value = event.target.value;
+  updateFastDroneNote();
+});
 updateFastDroneNote();
 
 COIN_DASH_FEATURES.forEach((feature) => {
@@ -92,12 +118,14 @@ form.addEventListener('submit', (event) => {
   const droneCount = Math.max(COIN_DASH.minDrones,
     Math.min(COIN_DASH.maxDrones, Number(droneCountInput.value) || COIN_DASH.droneCount));
   droneCountInput.value = droneCount;
+  syncDroneChoice();
   updateFastDroneNote();
   menu.hidden = true;
   gameContainer.hidden = false;
   gameControls.hidden = false;
   game = createCoinDashGame(activeFeatures, droneCount, (count) => {
     droneCountInput.value = count;
+    syncDroneChoice();
     updateFastDroneNote();
   });
 });
