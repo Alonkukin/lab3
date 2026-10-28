@@ -2,6 +2,8 @@
 
 Collect coins, avoid drones, and survive a 45-second round. Move with arrow keys or WASD;
 press R to restart. This is deliberately small so you can add features during the lab.
+Before each game, select any combination of features and press Start game. Leave every option
+unchecked to play the original game. Use Change features to return to the menu.
 
 **Play it here:** https://www.avivz.net/coin-dash/
 
@@ -37,6 +39,9 @@ laptops' JSON files together and save the combined HTML. Use the same time windo
 - `index.html`: page and script loading.
 - `style.css`: page appearance.
 - `settings.js`: round duration, speeds, colours and dimensions.
+- `features.js`: available menu options and their effects during a round. Add an entry with a
+  unique `id`, `label`, `description`, and `update(scene, progress)` to offer another feature.
+- `menu.js`: feature selection and game startup.
 - `game.js`: scene, input, collisions, score and end-of-round behaviour.
 - `vendor/phaser-3.90.0.min.js`: the pinned Phaser runtime, byte for byte the file published at
   `https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.min.js`; `vendor/LICENSE.phaser.txt` is its MIT licence.
