@@ -1,9 +1,10 @@
 /* global Phaser, COIN_DASH, COIN_DASH_SETTINGS */
 class CoinDash extends Phaser.Scene {
-  constructor(activeFeatures, droneCount, onDroneCountChange) {
+  constructor(activeFeatures, droneCount, background, onDroneCountChange) {
     super('CoinDash');
     this.activeFeatures = activeFeatures;
     this.droneCount = droneCount;
+    this.background = background;
     this.onDroneCountChange = onDroneCountChange;
   }
 
@@ -14,16 +15,19 @@ class CoinDash extends Phaser.Scene {
     this.playerSpeedBonus = 0;
     this.finished = false;
     this.paused = false;
-    this.choosingAbility = false;
     this.elapsedMs = 0;
     this.phaseUntil = 0;
     this.immuneUntil = 0;
     this.teleportEnabled = false;
     this.nextTeleportAt = 0;
     this.physics.world.setBounds(0, 68, c.width, c.height - 68);
-    this.add.grid(c.width / 2, c.height / 2, c.width, c.height, 40, 40,
-      c.colors.background, 1, 0x24334b, 0.45);
+    this.drawBackground();
+    this.add.rectangle(c.width / 2, 34, c.width, 68, 0x0a1120, 0.86);
     this.hud = this.add.text(18, 8, '', { font: '17px monospace', color: '#ffffff', lineSpacing: 4 });
+    this.abilityNotice = this.add.text(c.width / 2, 78, '',
+      { font: '20px monospace', color: '#71e8ce', backgroundColor: '#0a1120', padding: { x: 8, y: 4 } })
+      .setOrigin(0.5).setDepth(1);
+    this.abilityNoticeUntil = 0;
     this.player = this.add.rectangle(c.width / 2, c.height / 2, 24, 24, c.colors.player);
     this.physics.add.existing(this.player);
     this.player.body.setCollideWorldBounds(true);
@@ -45,13 +49,7 @@ class CoinDash extends Phaser.Scene {
       const angle = (35 + i * 105) * Math.PI / 180;
       drone.body.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
     }
-    this.physics.add.overlap(this.player, this.coins, (_player, coin) => {
-      if (this.finished || this.choosingAbility) return;
-      this.score++;
-      this.activeFeatures.forEach((feature) => feature.onCoinCollected?.(this));
-      this.placeCoin(coin);
-      if (this.score % 5 === 0) this.offerAbility();
-    });
+    this.physics.add.overlap(this.player, this.coins, (_player, coin) => this.collectCoin(coin));
     this.physics.add.overlap(this.player, this.drones, () => this.hitByDrone());
     this.cursors = this.input.keyboard.createCursorKeys();
     this.keys = this.input.keyboard.addKeys('W,A,S,D,R');
@@ -74,8 +72,46 @@ class CoinDash extends Phaser.Scene {
     });
   }
 
+  drawBackground() {
+    const { width, height } = COIN_DASH;
+    const art = this.add.graphics();
+    if (this.background === 'neon') {
+      art.fillStyle(0x100d2b).fillRect(0, 0, width, height);
+      art.lineStyle(1, 0x4e327b, 0.45);
+      for (let x = 0; x <= width; x += 40) art.lineBetween(x, 0, x, height);
+      for (let y = 0; y <= height; y += 40) art.lineBetween(0, y, width, y);
+      art.lineStyle(3, 0x31dcd2, 0.36);
+      for (let i = 0; i < 5; i++) {
+        const y = 105 + i * 78;
+        art.lineBetween(0, y, 110 + i * 22, y);
+        art.lineBetween(110 + i * 22, y, 155 + i * 22, y + 24);
+        art.lineBetween(155 + i * 22, y + 24, width, y + 24);
+        art.fillStyle(0x71e8ce, 0.72).fillCircle(110 + i * 22, y, 4);
+        art.fillStyle(0xc77dff, 0.75).fillCircle(155 + i * 22, y + 24, 4);
+      }
+      art.lineStyle(3, 0xc77dff, 0.5).strokeRect(12, 80, width - 24, height - 92);
+    } else if (this.background === 'sunset') {
+      art.fillStyle(0x292044).fillRect(0, 0, width, height);
+      art.fillStyle(0x51304f).fillRect(0, 95, width, 170);
+      art.fillStyle(0x7c4056).fillRect(0, 265, width, 100);
+      art.fillStyle(0xffbd77, 0.64).fillCircle(590, 180, 92);
+      art.fillStyle(0xffd69a, 0.55).fillCircle(590, 180, 69);
+      art.fillStyle(0x332641).fillTriangle(0, 310, 215, 170, 415, 310);
+      art.fillTriangle(305, 315, 535, 195, 800, 315);
+      art.fillStyle(0x1d233b).fillRect(0, 320, width, height - 320);
+      art.lineStyle(2, 0xe88783, 0.38);
+      for (let y = 340; y < height; y += 34) art.lineBetween(0, y, width, y);
+      for (let x = -320; x <= 1120; x += 160) art.lineBetween(400, 320, x, height);
+    } else {
+      art.fillStyle(COIN_DASH.colors.background).fillRect(0, 0, width, height);
+      art.lineStyle(1, 0x30435f, 0.48);
+      for (let x = 0; x <= width; x += 40) art.lineBetween(x, 0, x, height);
+      for (let y = 0; y <= height; y += 40) art.lineBetween(0, y, width, y);
+    }
+  }
+
   togglePause() {
-    if (this.finished || this.choosingAbility) return;
+    if (this.finished) return;
     const c = COIN_DASH;
     this.paused = !this.paused;
     if (this.paused) {
@@ -120,60 +156,35 @@ class CoinDash extends Phaser.Scene {
     coin.body.reset(x, y);
   }
 
-  offerAbility() {
+  collectCoin(coin) {
+    if (this.finished) return;
+    this.score++;
+    this.activeFeatures.forEach((feature) => feature.onCoinCollected?.(this));
+    this.placeCoin(coin);
+    if (Phaser.Math.Between(1, 3) === 1) this.grantRandomAbility();
+  }
+
+  grantRandomAbility() {
     const abilities = [
-      { label: '+1 life', description: 'Survive one more drone hit.', apply: () => { this.lives++; } },
-      { label: 'Phase', description: 'Pass through drones for 10 seconds.',
+      { label: '+1 life', apply: () => { this.lives++; } },
+      { label: 'Phase for 10s',
         apply: () => { this.phaseUntil = this.elapsedMs + 10000; } }
     ];
     if (!this.teleportEnabled) abilities.push({
       label: 'Coin teleport',
-      description: 'Jump to the closest coin every 5 seconds. Each jump grants 1 second of immunity.',
       apply: () => {
         this.teleportEnabled = true;
         this.nextTeleportAt = this.elapsedMs + 5000;
       }
     });
-    const first = Phaser.Math.Between(0, abilities.length - 1);
-    const choices = [abilities.splice(first, 1)[0], abilities[Phaser.Math.Between(0, abilities.length - 1)]];
-    this.choosingAbility = true;
-    this.physics.pause();
-    const c = COIN_DASH;
-    const overlay = this.add.container(c.width / 2, c.height / 2);
-    overlay.add(this.add.rectangle(0, 0, 650, 250, 0x0a1120, 0.97));
-    overlay.add(this.add.text(0, -96, 'Choose an ability',
-      { font: '25px monospace', color: '#ffffff' }).setOrigin(0.5));
-    choices.forEach((choice, index) => {
-      const y = -42 + index * 90;
-      const option = this.add.text(-292, y,
-        `${index + 1}. ${choice.label}\n${choice.description}`,
-        { font: '17px monospace', color: '#71e8ce', wordWrap: { width: 580 }, lineSpacing: 4 });
-      option.setInteractive({ useHandCursor: true });
-      option.on('pointerdown', () => select(index));
-      overlay.add(option);
-    });
-    const select = (index) => {
-      if (!this.choosingAbility) return;
-      this.choosingAbility = false;
-      cleanup();
-      overlay.destroy();
-      choices[index].apply();
-      this.physics.resume();
-    };
-    const cleanup = () => {
-      this.input.keyboard.off('keydown', chooseWithKey);
-      this.events.off(Phaser.Scenes.Events.SHUTDOWN, cleanup);
-    };
-    const chooseWithKey = (event) => {
-      if (event.key === '1') select(0);
-      if (event.key === '2') select(1);
-    };
-    this.input.keyboard.on('keydown', chooseWithKey);
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, cleanup);
+    const ability = abilities[Phaser.Math.Between(0, abilities.length - 1)];
+    ability.apply();
+    this.abilityNotice.setText(`Ability: ${ability.label}`);
+    this.abilityNoticeUntil = this.elapsedMs + 2000;
   }
 
   hitByDrone() {
-    if (this.finished || this.choosingAbility || this.elapsedMs < this.phaseUntil ||
+    if (this.finished || this.elapsedMs < this.phaseUntil ||
         this.elapsedMs < this.immuneUntil) return;
     this.lives--;
     if (this.lives === 0) {
@@ -194,8 +205,9 @@ class CoinDash extends Phaser.Scene {
   }
 
   update(_time, delta) {
-    if (this.finished || this.paused || this.choosingAbility) return;
+    if (this.finished || this.paused) return;
     this.elapsedMs += delta;
+    if (this.elapsedMs >= this.abilityNoticeUntil) this.abilityNotice.setText('');
     if (this.teleportEnabled && this.elapsedMs >= this.nextTeleportAt) {
       this.nextTeleportAt = this.elapsedMs + 5000;
       this.teleportToClosestCoin();
@@ -232,7 +244,7 @@ class CoinDash extends Phaser.Scene {
     ).setOrigin(0.5);
   }
 }
-window.createCoinDashGame = function (activeFeatures, droneCount, onDroneCountChange) {
+window.createCoinDashGame = function (activeFeatures, droneCount, background, onDroneCountChange) {
   return new Phaser.Game({
     type: Phaser.AUTO,
     parent: 'game',
@@ -241,6 +253,6 @@ window.createCoinDashGame = function (activeFeatures, droneCount, onDroneCountCh
     backgroundColor: COIN_DASH.colors.background,
     physics: { default: 'arcade', arcade: { debug: false } },
     scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_HORIZONTALLY },
-    scene: new CoinDash(activeFeatures, droneCount, onDroneCountChange)
+    scene: new CoinDash(activeFeatures, droneCount, background, onDroneCountChange)
   });
 };

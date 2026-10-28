@@ -115,6 +115,7 @@ form.addEventListener('submit', (event) => {
   closeSettings();
   const selected = new Set(new FormData(form).getAll('feature'));
   const activeFeatures = COIN_DASH_FEATURES.filter((feature) => selected.has(feature.id));
+  const background = new FormData(form).get('background');
   const droneCount = Math.max(COIN_DASH.minDrones,
     Math.min(COIN_DASH.maxDrones, Number(droneCountInput.value) || COIN_DASH.droneCount));
   droneCountInput.value = droneCount;
@@ -123,7 +124,7 @@ form.addEventListener('submit', (event) => {
   menu.hidden = true;
   gameContainer.hidden = false;
   gameControls.hidden = false;
-  game = createCoinDashGame(activeFeatures, droneCount, (count) => {
+  game = createCoinDashGame(activeFeatures, droneCount, background, (count) => {
     droneCountInput.value = count;
     syncDroneChoice();
     updateFastDroneNote();

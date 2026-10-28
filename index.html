@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Coin Dash — Lab 3 starter</title>
+<title>Coin Dash</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <main>
-  <header><p>LAB 3 · STARTER GAME</p><h1>Coin Dash</h1>
-  <p>Collect yellow coins. Dodge red drones and the faster purple ones. Every five coins, choose one of two random abilities. How many can you collect in 45 seconds?</p></header>
+  <header><h1><img class="game-logo" src="logo.svg" alt="Coin Dash"></h1>
+  <p>Collect yellow coins. Dodge red drones and the faster purple ones. Each coin has a one in three chance to grant a random ability. How many can you collect in 45 seconds?</p></header>
   <button id="settings-toggle" type="button" aria-controls="settings-panel" aria-expanded="false">Settings</button>
   <section id="settings-panel" class="settings-panel" aria-labelledby="settings-title" hidden>
     <h2 id="settings-title">Game settings</h2>
@@ -27,6 +27,26 @@
     <h2 id="menu-title">Choose your game features</h2>
     <p>Select any combination, or leave them all off for the original game.</p>
     <form id="feature-form">
+      <fieldset class="background-choice">
+        <legend>Choose your arena</legend>
+        <div class="background-options">
+          <label class="background-option">
+            <input type="radio" name="background" value="midnight" checked>
+            <span class="background-preview preview-midnight" aria-hidden="true"><span></span></span>
+            <strong>Midnight Grid</strong>
+          </label>
+          <label class="background-option">
+            <input type="radio" name="background" value="neon">
+            <span class="background-preview preview-neon" aria-hidden="true"><span></span></span>
+            <strong>Neon Circuit</strong>
+          </label>
+          <label class="background-option">
+            <input type="radio" name="background" value="sunset">
+            <span class="background-preview preview-sunset" aria-hidden="true"><span></span></span>
+            <strong>Sunset Run</strong>
+          </label>
+        </div>
+      </fieldset>
       <div class="drone-count-setting">
         <label for="drone-count">Number of drones</label>
         <input id="drone-count" name="drone-count" type="number" min="1" max="8" step="1" value="3" required>
@@ -40,9 +60,9 @@
       <button type="submit">Start game</button>
     </form>
   </section>
-  <div id="game" aria-label="Coin Dash game. Move with arrow keys or WASD. Choose abilities with 1 or 2." hidden></div>
+  <div id="game" aria-label="Coin Dash game. Move with arrow keys or WASD." hidden></div>
   <div id="game-controls" hidden>
-    <p>Move: <strong>arrow keys / WASD</strong> · Ability: <strong>1 / 2 or click</strong> · Pause: <strong>P / Esc</strong> · Restart: <strong>R</strong> · Drones: <strong>+ / −</strong> (starts a new round)</p>
+    <p>Move: <strong>arrow keys / WASD</strong> · Pause: <strong>P / Esc</strong> · Restart: <strong>R</strong> · Drones: <strong>+ / −</strong> (starts a new round)</p>
     <button id="change-features" type="button">Change features</button>
   </div>
 </main>

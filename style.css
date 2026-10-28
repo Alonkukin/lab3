@@ -3,12 +3,26 @@ body { margin: 0; background: #0a1120; color: #e5edf7; font: 17px/1.5 system-ui,
 main { max-width: 850px; margin: 30px auto; padding: 0 20px; }
 header > p:first-child { color: #71e8ce; font-size: 12px; letter-spacing: .15em; }
 h1 { margin: 0; font-size: 40px; }
+.game-logo { display: block; width: min(100%, 490px); height: auto; }
 #game { border: 1px solid #34445e; border-radius: 12px; overflow: hidden; }
 canvas { display: block; }
 [hidden] { display: none !important; }
 .menu { margin-top: 20px; padding: 24px; border: 1px solid #34445e; border-radius: 12px; background: #14223a; }
 .menu h2 { margin: 0 0 4px; }
 .menu p { margin: 0 0 18px; color: #b9c8da; }
+.background-choice { margin: 0 0 24px; padding: 0; border: 0; }
+.background-choice legend { margin-bottom: 10px; font-weight: 700; }
+.background-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.background-option { position: relative; display: block; padding: 8px; border: 2px solid #34445e; border-radius: 10px; cursor: pointer; text-align: center; }
+.background-option input { position: absolute; opacity: 0; }
+.background-option:has(input:checked) { border-color: #71e8ce; background: #1b3547; }
+.background-option:focus-within { outline: 2px solid #fff; outline-offset: 3px; }
+.background-option strong { display: block; margin: 7px 0 2px; font-size: 14px; }
+.background-preview { position: relative; display: block; height: 92px; overflow: hidden; border-radius: 6px; }
+.background-preview span { position: absolute; left: 47%; top: 47%; width: 12px; height: 12px; background: #71e8ce; box-shadow: 45px -16px 0 #ffd166, -45px 17px 0 #ff657a; }
+.preview-midnight { background-color: #101c31; background-image: linear-gradient(#30435f77 1px, transparent 1px), linear-gradient(90deg, #30435f77 1px, transparent 1px); background-size: 20px 20px; }
+.preview-neon { background-color: #100d2b; background-image: linear-gradient(#4e327b99 1px, transparent 1px), linear-gradient(90deg, #4e327b99 1px, transparent 1px), linear-gradient(160deg, transparent 47%, #31dcd288 48%, #31dcd288 50%, transparent 51%); background-size: 20px 20px, 20px 20px, 100% 100%; }
+.preview-sunset { background: radial-gradient(circle at 75% 38%, #ffd69a 0 18px, transparent 19px), linear-gradient(160deg, transparent 53%, #332641 54% 70%, transparent 71%), linear-gradient(#292044 0%, #7c4056 62%, #1d233b 63%); }
 .feature-options { display: grid; gap: 12px; margin-bottom: 20px; }
 .drone-count-setting { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
 .drone-count-setting input { width: 70px; padding: 8px; border: 1px solid #34445e; border-radius: 6px; background: #0a1120; color: #e5edf7; font: inherit; }
@@ -39,3 +53,9 @@ button:focus-visible, .feature-option:focus-within { outline: 2px solid #fff; ou
 .setting output { color: #71e8ce; white-space: nowrap; }
 .setting input { display: block; width: 100%; margin-top: 10px; accent-color: #71e8ce; }
 .setting small { display: block; margin-top: 6px; color: #b9c8da; }
+@media (max-width: 600px) {
+  .background-options { grid-template-columns: 1fr; }
+  .background-option { display: flex; align-items: center; gap: 12px; text-align: left; }
+  .background-preview { flex: 0 0 100px; height: 56px; }
+  .drone-count-setting { flex-wrap: wrap; }
+}
