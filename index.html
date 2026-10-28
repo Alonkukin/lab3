@@ -9,6 +9,20 @@
 <main>
   <header><p>LAB 3 · STARTER GAME</p><h1>Coin Dash</h1>
   <p>Collect yellow coins. Dodge red drones. How many can you collect in 45 seconds?</p></header>
+  <button id="settings-toggle" type="button" aria-controls="settings-panel" aria-expanded="false">Settings</button>
+  <section id="settings-panel" class="settings-panel" aria-labelledby="settings-title" hidden>
+    <h2 id="settings-title">Game settings</h2>
+    <p>Adjust these before or during a game. The round pauses while settings are open.</p>
+    <div class="setting">
+      <label for="player-speed">Player speed <output id="player-speed-value" for="player-speed"></output></label>
+      <input id="player-speed" type="range" min="120" max="400" step="10" value="240">
+    </div>
+    <div class="setting">
+      <label for="drone-growth-rate">Drone growth rate <output id="drone-growth-rate-value" for="drone-growth-rate"></output></label>
+      <input id="drone-growth-rate" type="range" min="0.25" max="3" step="0.25" value="1">
+      <small>Only applies when “Drones get bigger” is selected. At 1×, drones double in size by the end of the round.</small>
+    </div>
+  </section>
   <section id="menu" class="menu" aria-labelledby="menu-title">
     <h2 id="menu-title">Choose your game features</h2>
     <p>Select any combination, or leave them all off for the original game.</p>

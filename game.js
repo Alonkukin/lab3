@@ -1,4 +1,4 @@
-/* global Phaser, COIN_DASH */
+/* global Phaser, COIN_DASH, COIN_DASH_SETTINGS */
 class CoinDash extends Phaser.Scene {
   constructor(activeFeatures) {
     super('CoinDash');
@@ -8,8 +8,9 @@ class CoinDash extends Phaser.Scene {
   create() {
     const c = COIN_DASH;
     this.score = 0;
+    this.playerSpeedBonus = 0;
     this.finished = false;
-    this.deadline = this.time.now + c.roundSeconds * 1000;
+    this.elapsedMs = 0;
     this.physics.world.setBounds(0, 44, c.width, c.height - 44);
     this.add.grid(c.width / 2, c.height / 2, c.width, c.height, 40, 40,
       c.colors.background, 1, 0x24334b, 0.45);
@@ -30,6 +31,7 @@ class CoinDash extends Phaser.Scene {
     this.physics.add.overlap(this.player, this.coins, (_player, coin) => {
       if (this.finished) return;
       this.score++;
+      this.activeFeatures.forEach((feature) => feature.onCoinCollected?.(this));
       this.placeCoin(coin);
     });
     this.physics.add.overlap(this.player, this.drones, () => this.finish('A drone caught you!'));
@@ -63,18 +65,19 @@ class CoinDash extends Phaser.Scene {
     coin.body.reset(x, y);
   }
 
-  update() {
+  update(_time, delta) {
     if (this.finished) return;
+    this.elapsedMs += delta;
     const dx = Number(this.cursors.right.isDown || this.keys.D.isDown)
       - Number(this.cursors.left.isDown || this.keys.A.isDown);
     const dy = Number(this.cursors.down.isDown || this.keys.S.isDown)
       - Number(this.cursors.up.isDown || this.keys.W.isDown);
-    const direction = new Phaser.Math.Vector2(dx, dy).normalize().scale(COIN_DASH.playerSpeed);
+    const direction = new Phaser.Math.Vector2(dx, dy).normalize()
+      .scale(COIN_DASH_SETTINGS.playerSpeed + this.playerSpeedBonus);
     this.player.body.setVelocity(direction.x, direction.y);
-    const elapsed = COIN_DASH.roundSeconds * 1000 - (this.deadline - this.time.now);
-    const progress = Phaser.Math.Clamp(elapsed / (COIN_DASH.roundSeconds * 1000), 0, 1);
-    this.activeFeatures.forEach((feature) => feature.update(this, progress));
-    const seconds = Math.max(0, Math.ceil((this.deadline - this.time.now) / 1000));
+    const progress = Phaser.Math.Clamp(this.elapsedMs / (COIN_DASH.roundSeconds * 1000), 0, 1);
+    this.activeFeatures.forEach((feature) => feature.update?.(this, progress));
+    const seconds = Math.max(0, Math.ceil((COIN_DASH.roundSeconds * 1000 - this.elapsedMs) / 1000));
     this.hud.setText(`Coins: ${this.score}                       Time: ${seconds}s`);
     if (seconds === 0) this.finish('Time is up!');
   }

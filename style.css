@@ -19,3 +19,12 @@ button { padding: 10px 18px; border: 0; border-radius: 8px; background: #71e8ce;
 button:hover { background: #a0f3df; }
 button:focus-visible, .feature-option:focus-within { outline: 2px solid #fff; outline-offset: 3px; }
 #game-controls { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+#settings-toggle { margin: 18px 0; }
+.settings-panel { margin-bottom: 20px; padding: 24px; border: 1px solid #34445e; border-radius: 12px; background: #14223a; }
+.settings-panel h2 { margin: 0 0 4px; }
+.settings-panel p { margin: 0 0 18px; color: #b9c8da; }
+.setting + .setting { margin-top: 18px; }
+.setting label { display: flex; justify-content: space-between; gap: 12px; font-weight: 600; }
+.setting output { color: #71e8ce; white-space: nowrap; }
+.setting input { display: block; width: 100%; margin-top: 10px; accent-color: #71e8ce; }
+.setting small { display: block; margin-top: 6px; color: #b9c8da; }
