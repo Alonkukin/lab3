@@ -10,14 +10,20 @@ class CoinDash extends Phaser.Scene {
   create() {
     const c = COIN_DASH;
     this.score = 0;
+    this.lives = 1;
     this.playerSpeedBonus = 0;
     this.finished = false;
     this.paused = false;
+    this.choosingAbility = false;
     this.elapsedMs = 0;
-    this.physics.world.setBounds(0, 44, c.width, c.height - 44);
+    this.phaseUntil = 0;
+    this.immuneUntil = 0;
+    this.teleportEnabled = false;
+    this.nextTeleportAt = 0;
+    this.physics.world.setBounds(0, 68, c.width, c.height - 68);
     this.add.grid(c.width / 2, c.height / 2, c.width, c.height, 40, 40,
       c.colors.background, 1, 0x24334b, 0.45);
-    this.hud = this.add.text(18, 12, '', { font: '18px monospace', color: '#ffffff' });
+    this.hud = this.add.text(18, 8, '', { font: '17px monospace', color: '#ffffff', lineSpacing: 4 });
     this.player = this.add.rectangle(c.width / 2, c.height / 2, 24, 24, c.colors.player);
     this.physics.add.existing(this.player);
     this.player.body.setCollideWorldBounds(true);
@@ -40,12 +46,13 @@ class CoinDash extends Phaser.Scene {
       drone.body.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
     }
     this.physics.add.overlap(this.player, this.coins, (_player, coin) => {
-      if (this.finished) return;
+      if (this.finished || this.choosingAbility) return;
       this.score++;
       this.activeFeatures.forEach((feature) => feature.onCoinCollected?.(this));
       this.placeCoin(coin);
+      if (this.score % 5 === 0) this.offerAbility();
     });
-    this.physics.add.overlap(this.player, this.drones, () => this.finish('A drone caught you!'));
+    this.physics.add.overlap(this.player, this.drones, () => this.hitByDrone());
     this.cursors = this.input.keyboard.createCursorKeys();
     this.keys = this.input.keyboard.addKeys('W,A,S,D,R');
     const restart = () => this.scene.restart();
@@ -68,7 +75,7 @@ class CoinDash extends Phaser.Scene {
   }
 
   togglePause() {
-    if (this.finished) return;
+    if (this.finished || this.choosingAbility) return;
     const c = COIN_DASH;
     this.paused = !this.paused;
     if (this.paused) {
@@ -113,9 +120,86 @@ class CoinDash extends Phaser.Scene {
     coin.body.reset(x, y);
   }
 
+  offerAbility() {
+    const abilities = [
+      { label: '+1 life', description: 'Survive one more drone hit.', apply: () => { this.lives++; } },
+      { label: 'Phase', description: 'Pass through drones for 10 seconds.',
+        apply: () => { this.phaseUntil = this.elapsedMs + 10000; } }
+    ];
+    if (!this.teleportEnabled) abilities.push({
+      label: 'Coin teleport',
+      description: 'Jump to the closest coin every 5 seconds. Each jump grants 1 second of immunity.',
+      apply: () => {
+        this.teleportEnabled = true;
+        this.nextTeleportAt = this.elapsedMs + 5000;
+      }
+    });
+    const first = Phaser.Math.Between(0, abilities.length - 1);
+    const choices = [abilities.splice(first, 1)[0], abilities[Phaser.Math.Between(0, abilities.length - 1)]];
+    this.choosingAbility = true;
+    this.physics.pause();
+    const c = COIN_DASH;
+    const overlay = this.add.container(c.width / 2, c.height / 2);
+    overlay.add(this.add.rectangle(0, 0, 650, 250, 0x0a1120, 0.97));
+    overlay.add(this.add.text(0, -96, 'Choose an ability',
+      { font: '25px monospace', color: '#ffffff' }).setOrigin(0.5));
+    choices.forEach((choice, index) => {
+      const y = -42 + index * 90;
+      const option = this.add.text(-292, y,
+        `${index + 1}. ${choice.label}\n${choice.description}`,
+        { font: '17px monospace', color: '#71e8ce', wordWrap: { width: 580 }, lineSpacing: 4 });
+      option.setInteractive({ useHandCursor: true });
+      option.on('pointerdown', () => select(index));
+      overlay.add(option);
+    });
+    const select = (index) => {
+      if (!this.choosingAbility) return;
+      this.choosingAbility = false;
+      cleanup();
+      overlay.destroy();
+      choices[index].apply();
+      this.physics.resume();
+    };
+    const cleanup = () => {
+      this.input.keyboard.off('keydown', chooseWithKey);
+      this.events.off(Phaser.Scenes.Events.SHUTDOWN, cleanup);
+    };
+    const chooseWithKey = (event) => {
+      if (event.key === '1') select(0);
+      if (event.key === '2') select(1);
+    };
+    this.input.keyboard.on('keydown', chooseWithKey);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, cleanup);
+  }
+
+  hitByDrone() {
+    if (this.finished || this.choosingAbility || this.elapsedMs < this.phaseUntil ||
+        this.elapsedMs < this.immuneUntil) return;
+    this.lives--;
+    if (this.lives === 0) {
+      this.finish('A drone caught you!');
+      return;
+    }
+    this.immuneUntil = this.elapsedMs + 1000;
+  }
+
+  teleportToClosestCoin() {
+    const coin = this.coins.getChildren().reduce((closest, candidate) =>
+      !closest || Phaser.Math.Distance.Between(this.player.x, this.player.y, candidate.x, candidate.y) <
+        Phaser.Math.Distance.Between(this.player.x, this.player.y, closest.x, closest.y)
+        ? candidate : closest, null);
+    if (!coin) return;
+    this.player.body.reset(coin.x, coin.y);
+    this.immuneUntil = this.elapsedMs + 1000;
+  }
+
   update(_time, delta) {
-    if (this.finished || this.paused) return;
+    if (this.finished || this.paused || this.choosingAbility) return;
     this.elapsedMs += delta;
+    if (this.teleportEnabled && this.elapsedMs >= this.nextTeleportAt) {
+      this.nextTeleportAt = this.elapsedMs + 5000;
+      this.teleportToClosestCoin();
+    }
     const dx = Number(this.cursors.right.isDown || this.keys.D.isDown)
       - Number(this.cursors.left.isDown || this.keys.A.isDown);
     const dy = Number(this.cursors.down.isDown || this.keys.S.isDown)
@@ -123,10 +207,16 @@ class CoinDash extends Phaser.Scene {
     const direction = new Phaser.Math.Vector2(dx, dy).normalize()
       .scale(COIN_DASH_SETTINGS.playerSpeed + this.playerSpeedBonus);
     this.player.body.setVelocity(direction.x, direction.y);
+    this.player.setAlpha(this.elapsedMs < this.phaseUntil ? 0.45 :
+      this.elapsedMs < this.immuneUntil ? 0.7 : 1);
     const progress = Phaser.Math.Clamp(this.elapsedMs / (COIN_DASH.roundSeconds * 1000), 0, 1);
     this.activeFeatures.forEach((feature) => feature.update?.(this, progress));
     const seconds = Math.max(0, Math.ceil((COIN_DASH.roundSeconds * 1000 - this.elapsedMs) / 1000));
-    this.hud.setText(`Coins: ${this.score}          Drones: ${this.droneCount}          Time: ${seconds}s`);
+    const phase = Math.max(0, Math.ceil((this.phaseUntil - this.elapsedMs) / 1000));
+    const teleport = this.teleportEnabled
+      ? `${Math.max(0, Math.ceil((this.nextTeleportAt - this.elapsedMs) / 1000))}s`
+      : 'off';
+    this.hud.setText(`Coins: ${this.score}    Lives: ${this.lives}    Drones: ${this.droneCount}    Time: ${seconds}s\nPhase: ${phase}s    Teleport: ${teleport}`);
     if (seconds === 0) this.finish('Time is up!');
   }
 

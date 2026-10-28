@@ -8,7 +8,7 @@
 <body>
 <main>
   <header><p>LAB 3 · STARTER GAME</p><h1>Coin Dash</h1>
-  <p>Collect yellow coins. Dodge red drones and the faster purple ones. How many can you collect in 45 seconds?</p></header>
+  <p>Collect yellow coins. Dodge red drones and the faster purple ones. Every five coins, choose one of two random abilities. How many can you collect in 45 seconds?</p></header>
   <button id="settings-toggle" type="button" aria-controls="settings-panel" aria-expanded="false">Settings</button>
   <section id="settings-panel" class="settings-panel" aria-labelledby="settings-title" hidden>
     <h2 id="settings-title">Game settings</h2>
@@ -40,9 +40,9 @@
       <button type="submit">Start game</button>
     </form>
   </section>
-  <div id="game" aria-label="Coin Dash game. Move with arrow keys or WASD." hidden></div>
+  <div id="game" aria-label="Coin Dash game. Move with arrow keys or WASD. Choose abilities with 1 or 2." hidden></div>
   <div id="game-controls" hidden>
-    <p>Move: <strong>arrow keys / WASD</strong> · Pause: <strong>P / Esc</strong> · Restart: <strong>R</strong> · Drones: <strong>+ / −</strong> (starts a new round)</p>
+    <p>Move: <strong>arrow keys / WASD</strong> · Ability: <strong>1 / 2 or click</strong> · Pause: <strong>P / Esc</strong> · Restart: <strong>R</strong> · Drones: <strong>+ / −</strong> (starts a new round)</p>
     <button id="change-features" type="button">Change features</button>
   </div>
 </main>
