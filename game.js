@@ -1,8 +1,10 @@
 /* global Phaser, COIN_DASH, COIN_DASH_SETTINGS */
 class CoinDash extends Phaser.Scene {
-  constructor(activeFeatures) {
+  constructor(activeFeatures, droneCount, onDroneCountChange) {
     super('CoinDash');
     this.activeFeatures = activeFeatures;
+    this.droneCount = droneCount;
+    this.onDroneCountChange = onDroneCountChange;
   }
 
   create() {
@@ -21,8 +23,10 @@ class CoinDash extends Phaser.Scene {
     this.coins = this.physics.add.group();
     this.addCoin();
     this.drones = this.physics.add.group();
-    for (let i = 0; i < c.droneCount; i++) {
-      const drone = this.add.rectangle(90 + i * 270, 100, c.droneSize, c.droneSize, c.colors.drone);
+    for (let i = 0; i < this.droneCount; i++) {
+      const x = this.droneCount === c.droneCount ? 90 + i * 270 : (i + 0.5) * c.width / this.droneCount;
+      const y = this.droneCount === c.droneCount ? 100 : (i % 2 ? c.height - 60 : 100);
+      const drone = this.add.rectangle(x, y, c.droneSize, c.droneSize, c.colors.drone);
       this.drones.add(drone);
       drone.body.setCollideWorldBounds(true).setBounce(1, 1);
       const angle = (35 + i * 105) * Math.PI / 180;
@@ -38,9 +42,15 @@ class CoinDash extends Phaser.Scene {
     this.cursors = this.input.keyboard.createCursorKeys();
     this.keys = this.input.keyboard.addKeys('W,A,S,D,R');
     const restart = () => this.scene.restart();
+    const adjustDrones = (event) => {
+      if (event.key === '+' || event.key === '=') this.changeDrones(1);
+      if (event.key === '-' || event.key === '_') this.changeDrones(-1);
+    };
     this.input.keyboard.on('keydown-R', restart);
+    this.input.keyboard.on('keydown', adjustDrones);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.input.keyboard.off('keydown-R', restart);
+      this.input.keyboard.off('keydown', adjustDrones);
     });
   }
 
@@ -49,6 +59,14 @@ class CoinDash extends Phaser.Scene {
     this.coins.add(coin);
     coin.body.setCircle(9);
     this.placeCoin(coin);
+  }
+
+  changeDrones(delta) {
+    const count = Phaser.Math.Clamp(this.droneCount + delta, COIN_DASH.minDrones, COIN_DASH.maxDrones);
+    if (count === this.droneCount) return;
+    this.droneCount = count;
+    this.onDroneCountChange(count);
+    this.scene.restart();
   }
 
   placeCoin(coin) {
@@ -78,7 +96,7 @@ class CoinDash extends Phaser.Scene {
     const progress = Phaser.Math.Clamp(this.elapsedMs / (COIN_DASH.roundSeconds * 1000), 0, 1);
     this.activeFeatures.forEach((feature) => feature.update?.(this, progress));
     const seconds = Math.max(0, Math.ceil((COIN_DASH.roundSeconds * 1000 - this.elapsedMs) / 1000));
-    this.hud.setText(`Coins: ${this.score}                       Time: ${seconds}s`);
+    this.hud.setText(`Coins: ${this.score}          Drones: ${this.droneCount}          Time: ${seconds}s`);
     if (seconds === 0) this.finish('Time is up!');
   }
 
@@ -94,7 +112,7 @@ class CoinDash extends Phaser.Scene {
     ).setOrigin(0.5);
   }
 }
-window.createCoinDashGame = function (activeFeatures) {
+window.createCoinDashGame = function (activeFeatures, droneCount, onDroneCountChange) {
   return new Phaser.Game({
     type: Phaser.AUTO,
     parent: 'game',
@@ -103,6 +121,6 @@ window.createCoinDashGame = function (activeFeatures) {
     backgroundColor: COIN_DASH.colors.background,
     physics: { default: 'arcade', arcade: { debug: false } },
     scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_HORIZONTALLY },
-    scene: new CoinDash(activeFeatures)
+    scene: new CoinDash(activeFeatures, droneCount, onDroneCountChange)
   });
 };

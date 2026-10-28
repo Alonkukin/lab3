@@ -27,13 +27,17 @@
     <h2 id="menu-title">Choose your game features</h2>
     <p>Select any combination, or leave them all off for the original game.</p>
     <form id="feature-form">
+      <div class="drone-count-setting">
+        <label for="drone-count">Number of drones</label>
+        <input id="drone-count" name="drone-count" type="number" min="1" max="8" step="1" value="3" required>
+      </div>
       <div id="feature-options" class="feature-options"></div>
       <button type="submit">Start game</button>
     </form>
   </section>
   <div id="game" aria-label="Coin Dash game. Move with arrow keys or WASD." hidden></div>
   <div id="game-controls" hidden>
-    <p>Move: <strong>arrow keys / WASD</strong> · Restart: <strong>R</strong></p>
+    <p>Move: <strong>arrow keys / WASD</strong> · Restart: <strong>R</strong> · Drones: <strong>+ / −</strong> (starts a new round)</p>
     <button id="change-features" type="button">Change features</button>
   </div>
 </main>

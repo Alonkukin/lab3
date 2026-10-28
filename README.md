@@ -7,6 +7,8 @@ unchecked to play the original game. Use Change features to return to the menu.
 Open Settings before or during a game to adjust player speed and drone growth rate. The round
 pauses while Settings is open, and changes take effect when you resume. Drone growth rate only
 affects rounds with the “Drones get bigger” feature selected.
+Choose between 1 and 8 drones in the same menu; the default is 3. Press + or − during a game
+to change the count and start a fresh round.
 
 **Play it here:** https://www.avivz.net/coin-dash/
 
