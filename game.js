@@ -23,7 +23,9 @@ class Menu extends Phaser.Scene {
       box.on('pointerover', () => this.select(n));
       this.options.push({ n, box, label });
     }
-    this.add.text(c.width / 2, 360,
+    this.add.text(c.width / 2, 315, '', { font: '16px monospace', color: '#c77dff' })
+      .setOrigin(0.5).setName('fastNote');
+    this.add.text(c.width / 2, 370,
       '← / → to choose · Enter or Space to start\nor click a number',
       { font: '18px monospace', color: '#9fb0c8', align: 'center', lineSpacing: 8 }).setOrigin(0.5);
     const keys = this.input.keyboard;
@@ -45,6 +47,9 @@ class Menu extends Phaser.Scene {
       box.setFillStyle(active ? 0x2a1724 : 0x0a1120);
       label.setColor(active ? '#ff657a' : '#e5edf7');
     }
+    const fast = Math.floor((this.choice + c.fastDroneEvery - 2) / c.fastDroneEvery);
+    this.children.getByName('fastNote')
+      .setText(fast ? `${fast} of them fast (small purple)` : 'No fast drones');
   }
 
   startRound() {
@@ -79,11 +84,14 @@ class CoinDash extends Phaser.Scene {
       // Spread drones across the width, alternating top and bottom, away from the player.
       const x = (i + 0.5) * c.width / this.droneCount;
       const y = i % 2 ? c.height - 60 : 100;
-      const drone = this.add.rectangle(x, y, 26, 26, c.colors.drone);
+      const fast = i % c.fastDroneEvery === 1;
+      const size = fast ? 18 : 26;
+      const speed = fast ? c.fastDroneSpeed : c.droneSpeed;
+      const drone = this.add.rectangle(x, y, size, size, fast ? c.colors.fastDrone : c.colors.drone);
       this.drones.add(drone);
       drone.body.setCollideWorldBounds(true).setBounce(1, 1);
       const angle = (35 + i * 105) * Math.PI / 180;
-      drone.body.setVelocity(Math.cos(angle) * c.droneSpeed, Math.sin(angle) * c.droneSpeed);
+      drone.body.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
     }
     this.physics.add.overlap(this.player, this.coin, () => {
       if (this.finished) return;
